@@ -1,0 +1,78 @@
+GS Code
+var ss=SpreadsheetApp.getActiveSpreadsheet();
+var sheet=ss.getSheets()[0];
+function doGet() {
+  var tmpl=HtmlService.createTemplateFromFile('index');
+  return tmpl.evaluate().setTitle('index');
+  
+}
+
+function sendback(x){
+   var y=sheet.getLastRow()+1;
+   sheet.getRange(y, 1).setValue(x);
+   return "ok";
+}
+
+
+HTML Code
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+     
+    <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+      <script type="text/javascript">
+            var resultContainer = document.getElementById('qr-reader-results');
+            var lastResult, countResults = 0;
+
+            async function onScanSuccess(decodedText, decodedResult) {
+                if (decodedText !== lastResult) {
+                    ++countResults;
+                    lastResult = decodedText;
+                    // Handle on success condition with the decoded message.
+                    console.log(`Scan result ${decodedText}`, decodedResult);
+                    //alert(decodedText);
+                    
+                    google.script.run.sendback(decodedText);
+                    await waitme()
+                    $('#qr-reader-results').prepend("<p>" + decodedText + "</p>");
+                }
+            }
+           setTimeout(function(){
+               var html5QrcodeScanner = new Html5QrcodeScanner(
+                "qr-reader", { fps: 10, qrbox: 250 });
+               html5QrcodeScanner.render(onScanSuccess);
+              
+           },500);  
+           
+           function waitme(){
+             promise1=new Promise(function(resolve){
+               
+                  setTimeout(function(){
+                   
+                    resolve('ok');
+                  },1000)
+               })
+            
+               return promise1;
+ 
+           }
+           
+           window.addEventListener('beforeunload', function (e) {
+                  // Cancel the event
+                  e.preventDefault();
+                  // Chrome requires returnValue to be set
+                  e.returnValue = '3';
+            });
+      </script>
+
+  </head>
+  <body>
+        <div id="qr-reader" style="width:500px"></div>
+        <div style="position:absolute; top:0px; left:520px" id="qr-reader-results"></div>
+  </body>
+</html>
+
+
